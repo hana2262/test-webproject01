@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather Checker</title>
+    <title>Weather Quotes</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -13,65 +13,150 @@
             justify-content: center;
             align-items: center;
             background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 20px;
         }
         .container {
-            background: white;
-            padding: 2rem;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            width: 90%;
-            max-width: 400px;
+            background: rgba(255,255,255,0.95);
+            padding: 2.5rem;
+            border-radius: 24px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.35);
+            width: 100%;
+            max-width: 420px;
             text-align: center;
         }
-        h1 { color: #333; margin-bottom: 1.5rem; }
-        .search-box { display: flex; gap: 10px; margin-bottom: 1.5rem; }
+        h1 { 
+            color: #333; 
+            margin-bottom: 1.8rem; 
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+        .search-box { 
+            display: flex; 
+            gap: 12px; 
+            margin-bottom: 1.5rem; 
+        }
         input {
             flex: 1;
-            padding: 12px 20px;
-            border: 2px solid #ddd;
-            border-radius: 25px;
+            padding: 14px 22px;
+            border: 2px solid #e0e0e0;
+            border-radius: 30px;
             font-size: 1rem;
             outline: none;
+            transition: all 0.3s;
         }
-        input:focus { border-color: #667eea; }
+        input:focus { 
+            border-color: #667eea; 
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.15);
+        }
         button {
-            padding: 12px 25px;
+            padding: 14px 28px;
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
             border: none;
-            border-radius: 25px;
+            border-radius: 30px;
             font-size: 1rem;
+            font-weight: 500;
             cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-        button:hover { transform: scale(1.05); }
+        button:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102,126,234,0.4);
+        }
         .weather-info { display: none; }
-        .weather-info.show { display: block; animation: fadeIn 0.5s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .city { font-size: 1.5rem; color: #333; margin-bottom: 0.5rem; }
-        .temp { font-size: 3rem; font-weight: bold; color: #667eea; }
-        .cond { font-size: 1.2rem; color: #666; margin: 0.5rem 0; }
-        .details { display: flex; justify-content: space-around; color: #888; }
-        .error { color: #e74c3c; margin-top: 1rem; display: none; }
+        .weather-info.show { display: block; animation: fadeIn 0.6s; }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(15px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        .city { 
+            font-size: 1.6rem; 
+            color: #333; 
+            margin-bottom: 0.3rem;
+            font-weight: 600;
+        }
+        .country { 
+            font-size: 0.95rem; 
+            color: #888; 
+            margin-bottom: 1.2rem; 
+        }
+        .temp { 
+            font-size: 4rem; 
+            font-weight: 700; 
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .cond { 
+            font-size: 1.3rem; 
+            color: #555; 
+            margin: 0.8rem 0; 
+        }
+        .details { 
+            display: flex; 
+            justify-content: center; 
+            gap: 30px; 
+            color: #777;
+            margin: 1rem 0 1.5rem;
+            font-size: 0.95rem;
+        }
+        .quote-box {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            padding: 1.5rem;
+            border-radius: 16px;
+            margin-top: 1.2rem;
+            border-left: 4px solid #667eea;
+        }
+        .quote-text {
+            font-style: italic;
+            color: #555;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+        .quote-author {
+            color: #999;
+            font-size: 0.85rem;
+            margin-top: 0.8rem;
+        }
+        .error { 
+            color: #e74c3c; 
+            margin-top: 1rem; 
+            display: none;
+            padding: 12px;
+            background: #fdeaea;
+            border-radius: 10px;
+        }
         .error.show { display: block; }
-        .loading { color: #666; margin-top: 1rem; display: none; }
+        .loading { 
+            color: #666; 
+            margin-top: 1rem; 
+            display: none;
+            font-size: 1rem;
+        }
         .loading.show { display: block; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Weather</h1>
+        <h1>☁️ Weather Quotes</h1>
         <div class="search-box">
-            <input type="text" id="inp" placeholder="City name (e.g. Shanghai)">
+            <input type="text" id="inp" placeholder="Enter city name...">
             <button onclick="go()">Search</button>
         </div>
-        <div class="loading" id="loading">Loading...</div>
+        <div class="loading" id="loading">Searching...</div>
         <div class="weather-info" id="winfo">
             <div class="city" id="city"></div>
+            <div class="country" id="country"></div>
             <div class="temp" id="temp"></div>
             <div class="cond" id="cond"></div>
             <div class="details">
-                <span>Humidity: <span id="hum"></span>%</span>
-                <span>Wind: <span id="wind"></span> km/h</span>
+                <span>💧 <span id="hum"></span>%</span>
+                <span>💨 <span id="wind"></span> km/h</span>
+            </div>
+            <div class="quote-box">
+                <div class="quote-text" id="quote"></div>
+                <div class="quote-author" id="author"></div>
             </div>
         </div>
         <div class="error" id="err"></div>
@@ -89,6 +174,66 @@
             'Fog': '🌫️', 'Drizzle': '🌧️', 'Rain': '🌧️', 'Snow': '❄️', 'Rain Showers': '🌦️',
             'Snow Showers': '🌨️', 'Thunderstorm': '⛈️'
         };
+        
+        const quotes = {
+            'Clear': [
+                { t: "Today is a perfect day to chase your dreams.", a: "— Unknown" },
+                { t: "The sun is shining, and so are you! ✨", a: "— Unknown" },
+                { t: "Clear skies clear mind. Make it a great day!", a: "— Unknown" }
+            ],
+            'Mainly Clear': [
+                { t: "A little sunshine can light up the whole world.", a: "— Unknown" },
+                { t: "Perfect weather for a perfect day! 🌻", a: "— Unknown" }
+            ],
+            'Partly Cloudy': [
+                { t: "Even with some clouds, the sun hasn't forgotten you.", a: "— Unknown" },
+                { t: "Life is like the weather - partly beautiful.", a: "— Unknown" }
+            ],
+            'Overcast': [
+                { t: "Even gray days have their own beauty.", a: "— Unknown" },
+                { t: "Cloudy days are perfect for creative thoughts.", a: "— Unknown" }
+            ],
+            'Fog': [
+                { t: "Sometimes you need to slow down and find your way.", a: "— Unknown" },
+                { t: "The fog will lift. Good things take time. 🌫️", a: "— Unknown" }
+            ],
+            'Mist': [
+                { t: "Life feels softer in the mist. Take it easy.", a: "— Unknown" },
+                { t: "Embrace the gentle mystery of today. 🌫️", a: "— Unknown" }
+            ],
+            'Drizzle': [
+                { t: "Let the gentle rain wash away your worries.", a: "— Unknown" },
+                { t: "Perfect weather for a warm cup of tea ☕", a: "— Unknown" }
+            ],
+            'Rain': [
+                { t: "After rain, comes rainbow. 🌈", a: "— Unknown" },
+                { t: "Let the rain fall - it cleanses the soul.", a: "— Unknown" },
+                { t: "Dancing in the rain is a choice. 😊", a: "— Unknown" }
+            ],
+            'Snow': [
+                { t: "Every snowflake is a little miracle. ❄️", a: "— Unknown" },
+                { t: "Stay warm, stay cozy, stay magical! ✨", a: "— Unknown" },
+                { t: "Winter wonderland awaits. Embrace the cold!", a: "— Unknown" }
+            ],
+            'Rain Showers': [
+                { t: "Life isn't about waiting for the storm to pass.", a: "— Unknown" },
+                { t: "Dance like nobody's watching in the rain! 💃", a: "— Unknown" }
+            ],
+            'Snow Showers': [
+                { t: "Let it snow, let it snow, let it snow! ❄️", a: "— Unknown" },
+                { t: "Winter magic is real, and you're in it.", a: "— Unknown" }
+            ],
+            'Thunderstorm': [
+                { t: "Even the strongest storms pass. Stay strong! ⛈️", a: "— Unknown" },
+                { t: "Thunder roars, but you are louder than any storm.", a: "— Unknown" },
+                { t: "Ride the storm - you're stronger than you think.", a: "— Unknown" }
+            ]
+        };
+        
+        function getRandomQuote(condition) {
+            const list = quotes[condition] || quotes['Overcast'];
+            return list[Math.floor(Math.random() * list.length)];
+        }
 
         async function go() {
             const c = document.getElementById('inp').value.trim();
@@ -98,39 +243,43 @@
             w.classList.remove('show'); er.classList.remove('show'); load.classList.add('show');
             
             try {
-                // Step 1: Get coordinates from city name using Open-Meteo geocoding
                 const geoRes = await fetch('https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(c) + '&count=1&language=en&format=json');
-                if (!geoRes.ok) throw new Error('Failed to search city');
+                if (!geoRes.ok) throw new Error('Search failed');
                 const geoData = await geoRes.json();
                 if (!geoData.results || geoData.results.length === 0) throw new Error('City not found');
                 
                 const city = geoData.results[0];
                 const lat = city.latitude, lon = city.longitude;
-                const cityName = city.name + (city.country ? ', ' + city.country : '');
+                const cityName = city.name;
+                const countryName = city.country || '';
                 
-                // Step 2: Get weather from coordinates
                 const weatherRes = await fetch(
                     'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + 
                     '&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&timezone=auto'
                 );
-                if (!weatherRes.ok) throw new Error('Failed to get weather');
+                if (!weatherRes.ok) throw new Error('Weather fetch failed');
                 const weatherData = await weatherRes.json();
                 
                 const cur = weatherData.current;
                 const code = cur.weather_code;
-                const condition = weatherCodes[code] || 'Unknown';
+                const condition = weatherCodes[code] || 'Overcast';
                 
                 document.getElementById('city').textContent = cityName;
+                document.getElementById('country').textContent = countryName;
                 document.getElementById('temp').textContent = Math.round(cur.temperature_2m) + '°C';
                 document.getElementById('cond').textContent = (emojis[condition] || '🌡️') + ' ' + condition;
                 document.getElementById('hum').textContent = cur.relative_humidity_2m;
                 document.getElementById('wind').textContent = Math.round(cur.wind_speed_10m);
                 
+                const quote = getRandomQuote(condition);
+                document.getElementById('quote').textContent = '"' + quote.t + '"';
+                document.getElementById('author').textContent = quote.a;
+                
                 load.classList.remove('show');
                 w.classList.add('show');
             } catch (err) { 
                 load.classList.remove('show');
-                er.textContent = 'Error: ' + err.message; 
+                er.textContent = '❌ ' + err.message; 
                 er.classList.add('show'); 
             }
         }
