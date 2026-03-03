@@ -53,15 +53,18 @@
         .details { display: flex; justify-content: space-around; color: #888; }
         .error { color: #e74c3c; margin-top: 1rem; display: none; }
         .error.show { display: block; }
+        .loading { color: #666; margin-top: 1rem; display: none; }
+        .loading.show { display: block; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Weather</h1>
         <div class="search-box">
-            <input type="text" id="inp" placeholder="City name...">
+            <input type="text" id="inp" placeholder="City name (e.g. Shanghai)">
             <button onclick="go()">Search</button>
         </div>
+        <div class="loading" id="loading">Loading...</div>
         <div class="weather-info" id="winfo">
             <div class="city" id="city"></div>
             <div class="temp" id="temp"></div>
@@ -74,24 +77,62 @@
         <div class="error" id="err"></div>
     </div>
     <script>
-        const e = {'Clear':'Sunny','Partly cloudy':'Partly Cloudy','Cloudy':'Cloudy','Overcast':'Overcast','Mist':'Mist','Light rain':'Light Rain'};
+        const weatherCodes = {
+            0: 'Clear', 1: 'Mainly Clear', 2: 'Partly Cloudy', 3: 'Overcast',
+            45: 'Fog', 48: 'Fog', 51: 'Drizzle', 53: 'Drizzle', 55: 'Drizzle',
+            61: 'Rain', 63: 'Rain', 65: 'Rain', 71: 'Snow', 73: 'Snow', 75: 'Snow',
+            77: 'Snow', 80: 'Rain Showers', 81: 'Rain Showers', 82: 'Rain Showers',
+            85: 'Snow Showers', 86: 'Snow Showers', 95: 'Thunderstorm', 96: 'Thunderstorm', 99: 'Thunderstorm'
+        };
+        const emojis = {
+            'Clear': '☀️', 'Mainly Clear': '🌤️', 'Partly Cloudy': '⛅', 'Overcast': '☁️',
+            'Fog': '🌫️', 'Drizzle': '🌧️', 'Rain': '🌧️', 'Snow': '❄️', 'Rain Showers': '🌦️',
+            'Snow Showers': '🌨️', 'Thunderstorm': '⛈️'
+        };
+
         async function go() {
             const c = document.getElementById('inp').value.trim();
             if (!c) return;
-            const w = document.getElementById('winfo'), er = document.getElementById('err');
-            w.classList.remove('show'); er.classList.remove('show');
+            
+            const w = document.getElementById('winfo'), er = document.getElementById('err'), load = document.getElementById('loading');
+            w.classList.remove('show'); er.classList.remove('show'); load.classList.add('show');
+            
             try {
-                const r = await fetch('https://wttr.in/' + encodeURIComponent(c) + '?format=j1');
-                if (!r.ok) throw new Error('City not found');
-                const d = await r.json();
-                const cur = d.current_condition[0];
-                document.getElementById('city').textContent = d.nearest_area[0].areaName[0].value;
-                document.getElementById('temp').textContent = cur.temp_C + 'C';
-                document.getElementById('cond').textContent = (e[cur.weatherDesc[0].value] || 'Cloudy') + ' ' + cur.weatherDesc[0].value;
-                document.getElementById('hum').textContent = cur.humidity;
-                document.getElementById('wind').textContent = cur.windspeedKmph;
+                // Step 1: Get coordinates from city name using Open-Meteo geocoding
+                const geoRes = await fetch('https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(c) + '&count=1&language=en&format=json');
+                if (!geoRes.ok) throw new Error('Failed to search city');
+                const geoData = await geoRes.json();
+                if (!geoData.results || geoData.results.length === 0) throw new Error('City not found');
+                
+                const city = geoData.results[0];
+                const lat = city.latitude, lon = city.longitude;
+                const cityName = city.name + (city.country ? ', ' + city.country : '');
+                
+                // Step 2: Get weather from coordinates
+                const weatherRes = await fetch(
+                    'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + 
+                    '&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&timezone=auto'
+                );
+                if (!weatherRes.ok) throw new Error('Failed to get weather');
+                const weatherData = await weatherRes.json();
+                
+                const cur = weatherData.current;
+                const code = cur.weather_code;
+                const condition = weatherCodes[code] || 'Unknown';
+                
+                document.getElementById('city').textContent = cityName;
+                document.getElementById('temp').textContent = Math.round(cur.temperature_2m) + '°C';
+                document.getElementById('cond').textContent = (emojis[condition] || '🌡️') + ' ' + condition;
+                document.getElementById('hum').textContent = cur.relative_humidity_2m;
+                document.getElementById('wind').textContent = Math.round(cur.wind_speed_10m);
+                
+                load.classList.remove('show');
                 w.classList.add('show');
-            } catch (err) { er.textContent = 'Error: ' + err.message; er.classList.add('show'); }
+            } catch (err) { 
+                load.classList.remove('show');
+                er.textContent = 'Error: ' + err.message; 
+                er.classList.add('show'); 
+            }
         }
         document.getElementById('inp').addEventListener('keypress', x => { if (x.key === 'Enter') go(); });
     </script>
